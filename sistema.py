@@ -25,11 +25,11 @@ def filtrar_cliente(clientes, cpf):
     return clientes_filtrados[0] if clientes_filtrados else None
 
 def recuperar_conta_cliente(cliente, numero_conta):
-    if not cliente.contas():
+    if not cliente.contas:
         print('Cliente não tem nenhuma conta registrada.')
         return
     else:
-        conta = [conta for conta in cliente.contas() if conta.numero == numero_conta]
+        conta = [conta for conta in cliente.contas if conta.numero == numero_conta]
         if conta:
             return conta[0]
         else:
@@ -49,7 +49,7 @@ def depositar(clientes, cpf, valor, numero_conta):
     
     cliente.realizar_transacao(conta, transacao)
 
-def sacar(clientes, valor, numero_conta):
+def sacar(clientes, cpf, valor, numero_conta):
     cliente =  filtrar_cliente(clientes, cpf)
     if not cliente:
         print('Cliente não encontrado.')
@@ -63,7 +63,7 @@ def sacar(clientes, valor, numero_conta):
     cliente.realizar_transacao(conta, transacao)
 
 def print_extrato(clientes, cpf, numero_conta):
-    cliente = filtrar_cliente(cpf, clientes)
+    cliente = filtrar_cliente(clientes, cpf)
 
     if not cliente:
         print("\n@@@ Cliente não encontrado! @@@")
@@ -120,9 +120,9 @@ while True:
     if opcao == 'd':
         depositar(clientes, input('Informe o CPF do usuário: '), float(input('Digite o valor a ser depositado: ')), int(input('Digite o número da conta ')))
     elif opcao == 's':
-        sacar(clientes, float(input('Digite o valor a ser sacado: ')), int(input('Digite o número da conta ')))
+        sacar(clientes, input('Informe o CPF do usuário: '), float(input('Digite o valor a ser sacado: ')), int(input('Digite o número da conta ')))
     elif opcao == 'e':
-        print_extrato(clientes, input('Informe o CPF do usuário: '))
+        print_extrato(clientes, input('Informe o CPF do usuário: '), int(input('Digite o número da conta ')))
     elif opcao == 'nu':
         nome = input('Digite seu nome: ')
         cpf = input('Insira seu CPF (somente números): ')
