@@ -1,24 +1,34 @@
+from datetime import datetime
 import textwrap
 from classes.cliente import Cliente
 from classes.pessoa_fisica import PessoaFisica
 from classes.conta_corrente import ContaCorrente
 from classes.deposito import Deposito
 from classes.saque import Saque
+from classes.contas_iterador import ContasIterador
 
 menu = """
 
 [d] Depositar
 [s] Sacar
 [e] Extrato
-[q] Sair
 [nu] Criar novo usuário
 [nc] Criar nova conta
 [lc] Listar contas
+[q] Sair
 
 => """
 
 clientes = []
 contas = []
+
+def log_transacao(func):
+    def envelope(*args, **kwargs):
+        resultado = func(*args, **kwargs)
+        print(f'{datetime.now()}: {func.__name__.upper()}')
+        return resultado
+    
+    return envelope
 
 def filtrar_cliente(clientes, cpf):
     clientes_filtrados = [cliente for cliente in clientes if cliente.cpf == cpf]
@@ -36,6 +46,7 @@ def recuperar_conta_cliente(cliente, numero_conta):
             print('Número de conta não identificada')
             return
 
+@log_transacao
 def depositar(clientes, cpf, valor, numero_conta):
     cliente =  filtrar_cliente(clientes, cpf)
     if not cliente:
@@ -49,6 +60,7 @@ def depositar(clientes, cpf, valor, numero_conta):
     
     cliente.realizar_transacao(conta, transacao)
 
+@log_transacao
 def sacar(clientes, cpf, valor, numero_conta):
     cliente =  filtrar_cliente(clientes, cpf)
     if not cliente:
@@ -62,7 +74,7 @@ def sacar(clientes, cpf, valor, numero_conta):
     
     cliente.realizar_transacao(conta, transacao)
 
-def print_extrato(clientes, cpf, numero_conta):
+def print_extrato(clientes, cpf, numero_conta, tipo=None):
     cliente = filtrar_cliente(clientes, cpf)
 
     if not cliente:
@@ -74,19 +86,22 @@ def print_extrato(clientes, cpf, numero_conta):
         return
 
     print("\n================ EXTRATO ================")
-    transacoes = conta.historico.transacoes
 
     extrato = ""
-    if not transacoes:
+    vazio = True
+    
+    for transacao in conta.historico.gerar_relatorio(tipo_transacao=tipo):
+        vazio = False
+        extrato += f"\n{transacao['data']}\n{transacao['tipo']}:\n\tR$ {transacao['valor']:.2f}"
+
+    if vazio:
         extrato = "Não foram realizadas movimentações."
-    else:
-        for transacao in transacoes:
-            extrato += f"\n{transacao['data']}\n{transacao['tipo']}:\n\tR$ {transacao['valor']:.2f}"
 
     print(extrato)
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
     print("==========================================")
 
+@log_transacao
 def criar_usuario(clientes, nome, data, cpf, endereco):
     cliente = filtrar_cliente(clientes, cpf)
     if cliente:
@@ -98,6 +113,7 @@ def criar_usuario(clientes, nome, data, cpf, endereco):
 
     print('Cliente criado com sucesso!')
 
+@log_transacao
 def criar_conta_corrente(clientes, numero_conta, contas, cpf):
     cliente = filtrar_cliente(clientes, cpf)
     if not cliente:
@@ -110,7 +126,7 @@ def criar_conta_corrente(clientes, numero_conta, contas, cpf):
     print('Conta corrente criada com sucesso!')
 
 def listar_contas(contas):
-    for conta in contas:
+    for conta in ContasIterador(contas):
         print("=" * 100)
         print(textwrap.dedent(str(conta)))
 
