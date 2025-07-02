@@ -30,3 +30,6 @@ class ContaCorrente(Conta):
             C/C:\t\t{self.numero}
             Titular:\t{self.cliente.nome}
         """
+    
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: ('{self._agencia}', '{self._numero}', '{self.cliente._nome}')>"
